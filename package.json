@@ -1,12 +1,30 @@
 {
-  "name": "microservices-app",
+  "name": "node-microservices-blueprint",
   "version": "1.0.0",
-  "description": "Microservices-based Todo Application",
+  "description": "Enterprise Node.js Microservices Reference Blueprint",
+  "private": true,
+  "workspaces": [
+    "services/shared",
+    "services/user-service",
+    "services/todo-service",
+    "services/email-service"
+  ],
   "scripts": {
-    "install:all": "cd services/user-service && npm install && cd ../todo-service && npm install && cd ../email-service && npm install"
+    "build": "npm run build:all",
+    "build:all": "npm run --workspace=services/shared build && npm run --workspace=services/user-service build && npm run --workspace=services/todo-service build && npm run --workspace=services/email-service build",
+    "test": "npm run test:all",
+    "test:all": "npm run --workspace=services/shared test && npm run --workspace=services/user-service test && npm run --workspace=services/todo-service test && npm run --workspace=services/email-service test",
+    "test:coverage": "npm run --workspace=services/shared test -- --coverage && npm run --workspace=services/user-service test -- --coverage && npm run --workspace=services/todo-service test -- --coverage && npm run --workspace=services/email-service test -- --coverage"
   },
-  "keywords": ["microservices", "todo", "nodejs", "typescript", "mongodb", "rabbitmq"],
-  "author": "",
-  "license": "ISC"
+  "keywords": [
+    "microservices",
+    "nodejs",
+    "typescript",
+    "mongodb",
+    "rabbitmq",
+    "event-driven",
+    "docker-compose"
+  ],
+  "author": "Shafik Tanbir",
+  "license": "MIT"
 }
-
