@@ -7,42 +7,50 @@ import {
   connectRabbitMQ,
   consumeFromQueue,
 } from "./config/rabbitmq"
+import { correlationIdMiddleware, errorHandlerMiddleware, createLogger } from "@blueprint/shared"
 
 dotenv.config()
 
-const app: Application = express()
+const logger = createLogger("email-service")
+export const app: Application = express()
 const PORT = process.env.PORT || 3003
 
 // Middleware
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use(correlationIdMiddleware)
 
 // Health check endpoint
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok", service: "email-service" })
 })
 
+// Centralized error handling
+app.use(errorHandlerMiddleware(logger))
+
 // Graceful shutdown
 process.on("SIGINT", async () => {
-  console.log("Shutting down Email Service...")
-  closeRabbitMQ()
+  logger.info("Shutting down Email Service...")
+  await closeRabbitMQ()
   process.exit(0)
 })
 
 // Start server
-const startServer = async (): Promise<void> => {
+export const startServer = async (): Promise<void> => {
   try {
     initializeEmailTransporter()
     await connectRabbitMQ()
     await consumeFromQueue()
     app.listen(PORT, () => {
-      console.log(`Email Service running on port ${PORT}`)
+      logger.info(`Email Service running on port ${PORT}`)
     })
   } catch (error) {
-    console.error("Failed to start Email Service:", error)
+    logger.error({ err: error }, "Failed to start Email Service")
     process.exit(1)
   }
 }
 
-startServer()
+if (process.env.NODE_ENV !== "test") {
+  startServer()
+}

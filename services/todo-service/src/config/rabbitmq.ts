@@ -1,13 +1,14 @@
-import RabbitMQClient from "@tanuj_malode/rabbitmq"
+import { RabbitMQClient, QUEUES } from "@blueprint/shared"
 
-const rabbitMQ = new RabbitMQClient({
-  serviceName: "Todo Service",
-  queues: ["todo_created"],
+export const rabbitMQClient = new RabbitMQClient({
+  url: process.env.RABBITMQ_URL || "amqp://localhost:5672",
+  serviceName: "todo-service",
+  queues: [QUEUES.TODO_CREATED],
 })
 
-export const publishToQueue = async (queue: string, message: object) => {
-  await rabbitMQ.publishToQueue(queue, message)
+export const publishToQueue = async (queue: string, message: object, correlationId?: string) => {
+  await rabbitMQClient.publishToQueue(queue, message, { correlationId })
 }
 
-export const connectRabbitMQ = async () => rabbitMQ.connect()
-export const closeRabbitMQ = async () => rabbitMQ.close()
+export const connectRabbitMQ = async () => rabbitMQClient.connect()
+export const closeRabbitMQ = async () => rabbitMQClient.close()

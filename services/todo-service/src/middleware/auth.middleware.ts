@@ -1,34 +1,37 @@
-import { Request, Response, NextFunction } from "express"
-import { extractUserIdFromToken } from "../utils/utils"
+import { Response, NextFunction } from "express"
 import jwt from "jsonwebtoken"
+import { UnauthorizedError, AuthenticatedUser, AuthRequest } from "@blueprint/shared"
 
-export type AuthRequest = Request & {
-  userId?: string
-  token?: string
-}
+export { AuthenticatedUser, AuthRequest }
 
-// Middleware to extract user ID from JWT token stored in cookies
+// Cryptographically secure authentication middleware
 export const authenticateToken = (
   req: AuthRequest,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): void => {
   try {
-    const token = req.cookies?.authToken
-    console.log("Extracted token from cookies:", token)
+    let token = req.cookies?.authToken
 
-    if (!token) {
-      res.status(401).json({ error: "Access token required" })
-      return
+    if (!token && req.headers.authorization?.startsWith("Bearer ")) {
+      token = req.headers.authorization.split(" ")[1]
     }
 
-    const user = jwt.decode(token)
+    if (!token) {
+      throw new UnauthorizedError("Access token required")
+    }
 
-    // @ts-ignore
-    req.userId = user.userId
+    const secret = process.env.JWT_SECRET || "default_secret"
+    const decoded = jwt.verify(token, secret) as AuthenticatedUser
+
+    req.user = decoded
+    req.userId = decoded.userId
     req.token = token
     next()
   } catch (error) {
-    res.status(403).json({ error: "Invalid or expired token" })
+    if (error instanceof UnauthorizedError) {
+      return next(error)
+    }
+    next(new UnauthorizedError("Invalid or expired authentication token"))
   }
 }

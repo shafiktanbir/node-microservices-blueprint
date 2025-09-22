@@ -1,41 +1,93 @@
-import { Router, Request, Response } from "express"
-import { createUser, loginUser } from "../services/user.service"
+import { Router, Request, Response, NextFunction } from "express"
+import { z } from "zod"
+import { createUser, loginUser, getUserById } from "../services/user.service"
+import { verifyToken } from "../utils/utils"
+import { UnauthorizedError } from "@blueprint/shared"
 
 const router = Router()
 
+export const registerSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  name: z.string().min(2, "Name must be at least 2 characters"),
+})
+
+export const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+})
+
 // Register a new user
-router.post("/register", async (req: Request, res: Response): Promise<void> => {
+router.post("/register", async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { email, password, name } = req.body
+    const validatedData = registerSchema.parse(req.body)
+    const result = await createUser(validatedData)
 
-    if (!email || !password || !name) {
-      res.status(400).json({ error: "Email, password, and name are required" })
-      return
-    }
+    res.cookie("authToken", result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    })
 
-    const result = await createUser({ email, password, name }, res)
     res.status(201).json(result)
   } catch (error) {
-    const err = error as Error
-    res.status(400).json({ error: err.message })
+    next(error)
   }
 })
 
 // Login user
-router.post("/login", async (req: Request, res: Response): Promise<void> => {
+router.post("/login", async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { email, password } = req.body
+    const validatedData = loginSchema.parse(req.body)
+    const result = await loginUser(validatedData.email, validatedData.password)
 
-    if (!email || !password) {
-      res.status(400).json({ error: "Email and password are required" })
-      return
-    }
+    res.cookie("authToken", result.token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    })
 
-    const result = await loginUser(email, password, res)
     res.status(200).json(result)
   } catch (error) {
-    const err = error as Error
-    res.status(401).json({ error: err.message })
+    next(error)
+  }
+})
+
+// Logout user
+router.post("/logout", (_req: Request, res: Response): void => {
+  res.clearCookie("authToken")
+  res.status(200).json({ message: "Logged out successfully" })
+})
+
+// Get current authenticated user profile
+router.get("/me", async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    let token = req.cookies?.authToken
+    if (!token && req.headers.authorization?.startsWith("Bearer ")) {
+      token = req.headers.authorization.split(" ")[1]
+    }
+
+    if (!token) {
+      throw new UnauthorizedError("Authentication required")
+    }
+
+    const payload = verifyToken(token)
+    const user = await getUserById(payload.userId)
+    res.status(200).json({ user })
+  } catch (error) {
+    next(error)
+  }
+})
+
+// Internal lookup by User ID
+router.get("/:id", async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const user = await getUserById(req.params.id)
+    res.status(200).json({ user })
+  } catch (error) {
+    next(error)
   }
 })
 
