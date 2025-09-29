@@ -1,0 +1,115 @@
+services:
+  # Infrastructure: Message Broker
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: blueprint-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - blueprint-network
+
+  # Infrastructure: Databases (Isolated Per-Service Schemas)
+  mongodb-user:
+    image: mongo:7.0-jammy
+    container_name: blueprint-mongodb-user
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_user_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - blueprint-network
+
+  mongodb-todo:
+    image: mongo:7.0-jammy
+    container_name: blueprint-mongodb-todo
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongodb_todo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand({ ping: 1 })"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - blueprint-network
+
+  # Application Microservices
+  user-service:
+    build:
+      context: .
+      dockerfile: services/user-service/Dockerfile
+    container_name: blueprint-user-service
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      MONGODB_URI: mongodb://mongodb-user:27017/user-service
+      JWT_SECRET: production_jwt_secret_key_blueprint_2026
+    depends_on:
+      mongodb-user:
+        condition: service_healthy
+    networks:
+      - blueprint-network
+
+  todo-service:
+    build:
+      context: .
+      dockerfile: services/todo-service/Dockerfile
+    container_name: blueprint-todo-service
+    ports:
+      - "3002:3002"
+    environment:
+      NODE_ENV: production
+      PORT: 3002
+      MONGODB_URI: mongodb://mongodb-todo:27017/todo-service
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      JWT_SECRET: production_jwt_secret_key_blueprint_2026
+    depends_on:
+      mongodb-todo:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - blueprint-network
+
+  email-service:
+    build:
+      context: .
+      dockerfile: services/email-service/Dockerfile
+    container_name: blueprint-email-service
+    ports:
+      - "3003:3003"
+    environment:
+      NODE_ENV: production
+      PORT: 3003
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      EMAIL_FROM: noreply@blueprint.internal
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - blueprint-network
+
+volumes:
+  mongodb_user_data:
+  mongodb_todo_data:
+
+networks:
+  blueprint-network:
+    driver: bridge
