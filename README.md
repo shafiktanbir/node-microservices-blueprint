@@ -16,24 +16,24 @@
 
 ```mermaid
 graph TD
-    Client[Web / Mobile Client] -->|HTTP / Bearer Token| Gateway[API / Service Boundary]
+    Client["Web / Mobile Client"] -->|HTTP / Bearer Token| Gateway["API / Service Boundary"]
     
-    subgraph Identity Domain
-        Gateway -->|POST /api/users/login| UserService[User Service :3001]
-        UserService -->|Read / Write| UserDB[(MongoDB User DB)]
+    subgraph Identity_Domain ["Identity Domain"]
+        Gateway -->|POST /api/users/login| UserService["User Service :3001"]
+        UserService -->|Read / Write| UserDB[("MongoDB User DB")]
     end
 
-    subgraph Task Management Domain
-        Gateway -->|CRUD /api/todos| TodoService[Todo Service :3002]
-        TodoService -->|Verify Cryptographic JWT| TodoAuth[Auth Middleware]
-        TodoService -->|Read / Write| TodoDB[(MongoDB Todo DB)]
-        TodoService -->|Publish todo_created| Broker[RabbitMQ Topic Exchange]
+    subgraph Task_Domain ["Task Management Domain"]
+        Gateway -->|CRUD /api/todos| TodoService["Todo Service :3002"]
+        TodoService -->|Verify Cryptographic JWT| TodoAuth["Auth Middleware"]
+        TodoService -->|Read / Write| TodoDB[("MongoDB Todo DB")]
+        TodoService -->|Publish todo_created| Broker["RabbitMQ Topic Exchange"]
     end
 
-    subgraph Notification Domain
-        Broker -->|Consume todo_created| EmailService[Email Service :3003]
-        EmailService -->|Dead-Letter Quarantine| DLQ[todo_created.dlq]
-        EmailService -->|Dispatch HTML / Text| SMTP[SMTP Gateway / JSON Transport]
+    subgraph Notification_Domain ["Notification Domain"]
+        Broker -->|Consume todo_created| EmailService["Email Service :3003"]
+        EmailService -->|Dead-Letter Quarantine| DLQ["todo_created.dlq"]
+        EmailService -->|Dispatch HTML / Text| SMTP["SMTP Gateway / JSON Transport"]
     end
 ```
 
@@ -46,11 +46,11 @@ Unlike legacy architectures that require notification consumers to call back int
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as Authenticated Client
-    participant TodoSvc as Todo Service (:3002)
-    participant Broker as RabbitMQ Broker
-    participant EmailSvc as Email Service (:3003)
-    participant Transporter as Email Gateway
+    actor User as "Authenticated Client"
+    participant TodoSvc as "Todo Service (:3002)"
+    participant Broker as "RabbitMQ Broker"
+    participant EmailSvc as "Email Service (:3003)"
+    participant Transporter as "Email Gateway"
 
     User->>TodoSvc: POST /api/todos (Authorization: Bearer <JWT>)
     Note over TodoSvc: Verify JWT Signature (HS256) & Parse Zod Schema
