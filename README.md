@@ -1,3 +1,6 @@
+> 💡 **Available for Technical Consulting & High-Concurrency Architecture Audits:**  
+> [Book a 20-min System Teardown](https://shafiktanbir.com/?tab=book) · [Explore Full Case Studies](https://shafiktanbir.com)
+
 # 🧩 node-microservices-blueprint — Enterprise Node.js Microservices Reference Architecture
 
 [![Node.js](https://img.shields.io/badge/Node.js-v20%2B-green.svg)](https://nodejs.org)
@@ -151,3 +154,9 @@ docker compose up --build -d
 # 3. View service status
 docker compose ps
 ```
+
+---
+
+> 💡 **Available for Technical Consulting & High-Concurrency Architecture Audits:**  
+> [Book a 20-min System Teardown](https://shafiktanbir.com/?tab=book) · [Explore Full Case Studies](https://shafiktanbir.com)
+
