@@ -1,6 +1,3 @@
-> 💡 **Available for Technical Consulting & High-Concurrency Architecture Audits:**  
-> [Book a 20-min System Teardown](https://shafiktanbir.com/?tab=book) · [Explore Full Case Studies](https://shafiktanbir.com)
-
 # 🧩 node-microservices-blueprint — Enterprise Node.js Microservices Reference Architecture
 
 [![Node.js](https://img.shields.io/badge/Node.js-v20%2B-green.svg)](https://nodejs.org)
@@ -8,10 +5,12 @@
 [![Docker Compose](https://img.shields.io/badge/Docker_Compose-v2-blue.svg)](https://docs.docker.com/compose/)
 [![RabbitMQ](https://img.shields.io/badge/RabbitMQ-v3.12-orange.svg)](https://www.rabbitmq.com)
 [![MongoDB](https://img.shields.io/badge/MongoDB-v7.0-brightgreen.svg)](https://www.mongodb.com)
-[![Jest](https://img.shields.io/badge/Jest_Tests-48%2F48_Passing-brightgreen.svg)](https://jestjs.io)
+[![Jest](https://img.shields.io/badge/Jest_Tests-48%2F48_Passing-brightgreen.svg)](https://github.com/shafiktanbir/node-microservices-blueprint/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> Enterprise reference architecture for decoupled, event-driven Node.js microservices. Implements Event-Carried State Transfer choreography via RabbitMQ, cryptographic JWT verification, runtime Zod schema enforcement, end-to-end distributed correlation tracing, and isolated per-service MongoDB schemas.
+**What This System Solves:** Lets independent user, task, and email notification services keep running cleanly even if another service restarts or spikes.
+
+> Reference architecture for decoupled, event-driven Node.js/TypeScript microservices implementing Event-Carried State Transfer via RabbitMQ, cryptographic JWT verification, runtime Zod schema enforcement, correlation tracing, and isolated per-service MongoDB schemas.
 
 ---
 
@@ -154,9 +153,4 @@ docker compose up --build -d
 # 3. View service status
 docker compose ps
 ```
-
----
-
-> 💡 **Available for Technical Consulting & High-Concurrency Architecture Audits:**  
-> [Book a 20-min System Teardown](https://shafiktanbir.com/?tab=book) · [Explore Full Case Studies](https://shafiktanbir.com)
 
