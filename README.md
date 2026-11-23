@@ -5,7 +5,7 @@
 [![Docker Compose](https://img.shields.io/badge/Docker_Compose-v2-blue.svg)](https://docs.docker.com/compose/)
 [![RabbitMQ](https://img.shields.io/badge/RabbitMQ-v3.12-orange.svg)](https://www.rabbitmq.com)
 [![MongoDB](https://img.shields.io/badge/MongoDB-v7.0-brightgreen.svg)](https://www.mongodb.com)
-[![Jest](https://img.shields.io/badge/Jest_Tests-48%2F48_Passing-brightgreen.svg)](https://github.com/shafiktanbir/node-microservices-blueprint/actions)
+[![Microservices CI](https://github.com/shafiktanbir/node-microservices-blueprint/actions/workflows/ci.yml/badge.svg)](https://github.com/shafiktanbir/node-microservices-blueprint/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **What This System Solves:** Lets independent user, task, and email notification services keep running cleanly even if another service restarts or spikes.
